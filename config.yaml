@@ -1,0 +1,27 @@
+px_nm_target: 25.0
+smoothing_sigma_px: 1.5
+otsu_classes: 3
+pore_hysteresis_levels: 6
+pore_min_px: 20
+si_opening_radius_px: 1
+si_min_px_count: 100
+si_min_px_size: 500
+si_interior_margin_levels: 10
+strips: 5
+strip_width_px: 1400
+quadrat_px: 700
+structure_tensor_sigma_px: 8
+crack_sato_sigmas: [1, 2, 3]
+crack_min_length_px: 80
+crack_max_width_px: 6
+curtaining_exclusion_deg: 10
+hiz_threshold: 190
+hiz_min_px: 50
+scale_rel_floor: 0.05
+zones: {investigate: 2.5, reject: 4.0, multi_count_z: 2.5, multi_count_n: 3}
+shrinkage_grid: [0, 0.25, 0.5, 1.0]
+temperature_grid: [0.5, 1, 2, 4, 8]
+bootstrap_n: 1000
+seed: 0
+weights: {R: 1.0, M: 0.7, W: 0.4}
+manual_masks: {}
