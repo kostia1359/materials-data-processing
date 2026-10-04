@@ -164,15 +164,18 @@ def run_validation(data: Path, out: Path, cfg: dict):
     samples = [s for s in discover(data) if s.batch in ("1", "2", "3")]
     sens = sensitivity(samples, cfg, stats, out)
     if len(sens):
-        base = sens[sens["variant"] == "t+5"]  # placeholder index
+        sens.to_csv(out / "sensitivity_raw.csv", index=False)
         # delta in scale units vs the nominal kpis.csv values
         nom = kpis_df.set_index("sample_id")
         sens["nominal"] = sens.apply(
             lambda r: nom.loc[r["sample_id"], r["kpi"]]
             if r["sample_id"] in nom.index else np.nan, axis=1)
-        sens["delta_scale"] = sens.apply(
-            lambda r: (r["value"] - r["nominal"]) / stats["kpis"][r["kpi"]]["scale"]
-            if np.isfinite(r["nominal"]) else np.nan, axis=1)
+        def _ds(r):
+            st = stats["kpis"].get(r["kpi"])
+            if not np.isfinite(r["nominal"]) or not st or not st.get("scale"):
+                return np.nan
+            return (r["value"] - r["nominal"]) / st["scale"]
+        sens["delta_scale"] = sens.apply(_ds, axis=1)
         sens.to_csv(out / "sensitivity.csv", index=False)
 
     md = ["# Validation", "",

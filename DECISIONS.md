@@ -15,3 +15,12 @@
 - `qc regress` compares the frozen 16-KPI shortlist per sample; |Δ| < 0.1·scale_k = insignificant.
 - `si_contact_pore_frac` and `pore_percolating_frac_v` are structurally zero on all 31 samples (hysteresis pore mask terminates ≥2 px inside carbon; no vertically-percolating pore network at this FOV). They stay in the frozen shortlist but carry z=0; noted honestly rather than silently dropped.
 - LOIO baseline stats are rebuilt excluding the held-out image (uses rebuilt `st` for z/centroids/hyperparams, not the full-baseline stats — fixed a mild leakage).
+- **Sensitivity runs report `nan` delta for all-zero KPIs** (the two dead
+  shortlist KPIs): delta/scale = 0/0. Reported as nan, counted as stable.
+- **Sensitivity workers are module-level `_sens_run`** so ProcessPoolExecutor
+  can pickle them; each variant subprocess re-runs `process_sample` with a
+  patched cfg — ~20s/sample on a 5-worker pool.
+- **VALIDATION.md carries a written interpretation**: shadow-classifier
+  confound, ~40% B3 verdict false-alarm rate explained as real internal
+  outliers, and resolution-sensitivity of chord/correlation-length KPIs named
+  as the pipeline's weakest property.
