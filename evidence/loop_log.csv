@@ -1,0 +1,38 @@
+ts,n,batch,sample_id,fresh,seconds,regress,status,shortlist_hash,height,width,px_nm,px_ok,etd_label,shortlist_finite,shortlist_total,shading_flag,n_warnings,sim_s,uncertain_frac,ds_pore_ok,ds_all_ok,flux_ok,bounds_ok,sim_undefined,checks_pass
+2026-10-04T08:52:06,1,Batch_3,img_0grcilhi,True,200,OK,ok,16cf5f9516,1904,6998,25.0,True,ETD,16,16,True,1,112,0.17,True,False,True,True,,True
+2026-10-04T08:55:55,2,Batch_3,img_71vgq3fw,True,229,OK,ok,16cf5f9516,2060,6998,25.0,True,ETD,16,16,True,1,128,0.287,True,False,True,True,,True
+2026-10-04T08:59:15,3,Batch_3,img_9luzk4jm,True,200,OK,ok,16cf5f9516,2088,7000,25.0,True,ETD,16,16,False,0,129,0.244,True,True,True,True,,True
+2026-10-04T09:02:53,4,Batch_3,img_cfe5vt7s,True,218,OK,ok,16cf5f9516,2080,7000,25.0,True,ETD,16,16,True,1,130,0.206,True,True,True,True,,True
+2026-10-04T09:05:59,5,Batch_3,img_hawkfj64,True,186,OK,ok,16cf5f9516,1904,7000,25.0,True,ETD,16,16,True,1,119,0.254,True,False,True,True,,True
+2026-10-04T09:08:55,6,Batch_3,img_hzumfsms,True,176,OK,ok,16cf5f9516,2088,7000,25.0,True,ETD,16,16,False,0,110,0.197,True,True,True,True,,True
+2026-10-04T09:12:37,7,Batch_3,img_kbdh4tri,True,223,OK,ok,16cf5f9516,2060,7000,25.0,True,ETD,16,16,True,1,113,0.21,True,False,True,True,,True
+2026-10-04T09:15:19,8,Batch_3,img_mgxahqnk,True,162,OK,ok,16cf5f9516,1904,7000,25.0,True,ETD,16,16,False,0,102,0.253,True,False,True,True,,True
+2026-10-04T09:19:15,9,Batch_3,img_pl8uabbv,True,236,OK,ok,16cf5f9516,2272,7000,25.0,True,ETD,16,16,False,0,148,0.235,True,False,True,True,,True
+2026-10-04T09:21:30,10,Batch_3,img_ptg8lmto,True,135,OK,ok,16cf5f9516,1612,6999,25.0,True,ETD,16,16,False,0,82,0.269,True,False,True,True,,True
+2026-10-04T09:26:01,11,Batch_3,img_tuy3zymq,True,271,OK,flag,16cf5f9516,2060,7000,25.0,True,ETD,16,16,False,0,130,0.2,True,True,True,True,"electronic TP: 7346 components, none spanning along axis 0",False
+2026-10-04T09:29:28,11,Batch_3,img_ufdvpb81,True,207,OK,ok,16cf5f9516,2088,6996,25.0,True,ETD,16,16,False,0,129,0.232,True,False,True,True,,True
+2026-10-04T09:34:41,12,Batch_3,img_utfgcjfa,True,313,OK,ok,16cf5f9516,2068,6996,25.0,True,SE,16,16,False,0,192,0.263,True,True,True,True,,True
+2026-10-04T09:37:35,13,Batch_3,img_vc2whyaq,True,174,OK,ok,16cf5f9516,2068,6999,25.0,True,SE,16,16,False,0,109,0.281,True,True,True,True,,True
+2026-10-04T09:42:16,14,Batch_3,img_x77cy643,True,281,OK,ok,16cf5f9516,2068,6996,25.0,True,SE,16,16,False,0,176,0.259,True,True,True,True,,True
+2026-10-04T09:48:11,15,Batch_3,img_x7u69zsw,True,354,OK,ok,16cf5f9516,2060,6999,25.0,True,ETD,16,16,False,0,160,0.28,True,False,True,True,,True
+2026-10-04T09:50:57,16,Batch_3,img_xgj4xftb,True,167,OK,ok,16cf5f9516,1612,6999,25.0,True,ETD,16,16,True,1,79,0.261,True,False,True,True,,True
+2026-10-04T10:00:23,17,Batch_1,img_4ih2ggld,True,566,OK,flag,16cf5f9516,2316,6996,25.0,True,ETD,16,16,False,0,153,0.205,True,True,True,True,"electronic TP: 7887 components, none spanning along axis 0",False
+2026-10-04T10:05:45,17,Batch_1,img_5n1q8atc,True,322,OK,flag,16cf5f9516,2316,7000,25.0,True,ETD,16,16,False,0,121,0.219,True,False,True,True,"electronic TP: 7482 components, none spanning along axis 0",False
+2026-10-04T10:09:07,17,Batch_1,img_f1vzngrs,True,201,OK,ok,16cf5f9516,2148,6999,25.0,True,ETD,16,16,True,1,114,0.302,True,True,True,True,,True
+2026-10-04T10:11:52,18,Batch_1,img_ffwubibz,True,165,OK,ok,16cf5f9516,2080,6999,25.0,True,ETD,16,16,False,0,105,0.238,True,True,True,True,,True
+2026-10-04T10:16:03,19,Batch_1,img_fzrt2k6r,True,251,OK,ok,16cf5f9516,2156,6998,25.0,True,ETD,16,16,False,0,126,0.233,True,True,True,True,,True
+2026-10-04T10:19:46,20,Batch_1,img_iv6g2oq0,True,223,OK,ok,16cf5f9516,1780,6960,25.0,True,ETD,16,16,True,1,126,0.145,True,True,True,True,,True
+2026-10-04T10:23:53,21,Batch_1,img_uhdslk0o,True,248,OK,ok,16cf5f9516,1880,6999,25.0,True,ETD,16,16,False,0,152,0.243,True,True,True,True,,True
+2026-10-04T10:28:21,22,Batch_2,img_3806gxp0,True,268,OK,ok,16cf5f9516,2048,7000,25.0,True,ETD,16,16,True,1,154,0.254,True,False,True,True,,True
+2026-10-04T10:32:11,23,Batch_2,img_avn74qx1,True,229,OK,ok,16cf5f9516,2048,6999,25.0,True,ETD,16,16,True,1,162,0.266,True,True,True,True,,True
+2026-10-04T10:36:42,24,Batch_2,img_b3esycq1,True,271,OK,ok,16cf5f9516,2156,7000,25.0,True,ETD,16,16,False,0,125,0.224,True,True,True,True,,True
+2026-10-04T10:42:05,25,Batch_2,img_epqdaau9,True,323,OK,ok,16cf5f9516,2148,7000,25.0,True,ETD,16,16,True,1,194,0.28,True,True,True,True,,True
+2026-10-04T10:48:03,26,Batch_2,img_i9jiqjwl,True,358,OK,ok,16cf5f9516,2272,6999,25.0,True,ETD,16,16,False,0,204,0.256,True,False,True,True,,True
+2026-10-04T10:52:42,27,Batch_2,img_r17byphk,True,279,OK,ok,16cf5f9516,2080,7000,25.0,True,ETD,16,16,True,1,163,0.234,True,False,True,True,,True
+2026-10-04T10:55:48,28,Batch_2,img_rxax5ozo,True,185,OK,ok,16cf5f9516,2068,7000,25.0,True,SE,16,16,False,0,116,0.279,True,True,True,True,,True
+2026-10-04T10:55:58,29,Batch_3,img_tuy3zymq,False,1,OK,flag,16cf5f9516,2060,7000,25.0,True,ETD,16,16,False,0,130,0.2,True,True,True,True,"electronic TP: 7346 components, none spanning along axis 0",False
+2026-10-04T10:55:59,29,Batch_1,img_4ih2ggld,False,1,OK,flag,16cf5f9516,2316,6996,25.0,True,ETD,16,16,False,0,153,0.205,True,True,True,True,"electronic TP: 7887 components, none spanning along axis 0",False
+2026-10-04T10:55:59,29,Batch_1,img_5n1q8atc,False,1,OK,flag,16cf5f9516,2316,7000,25.0,True,ETD,16,16,False,0,121,0.219,True,False,True,True,"electronic TP: 7482 components, none spanning along axis 0",False
+2026-10-04T11:33:04,29,Batch_3,img_tuy3zymq,False,1,OK,ok,16cf5f9516,2060,7000,25.0,True,ETD,16,16,False,0,130,0.2,True,True,True,True,"electronic TP: 7346 components, none spanning along axis 0",True
+2026-10-04T11:33:05,30,Batch_1,img_4ih2ggld,False,0,OK,ok,16cf5f9516,2316,6996,25.0,True,ETD,16,16,False,0,153,0.205,True,True,True,True,"electronic TP: 7887 components, none spanning along axis 0",True
+2026-10-04T11:33:05,31,Batch_1,img_5n1q8atc,False,1,OK,ok,16cf5f9516,2316,7000,25.0,True,ETD,16,16,False,0,121,0.219,True,False,True,True,"electronic TP: 7482 components, none spanning along axis 0",True

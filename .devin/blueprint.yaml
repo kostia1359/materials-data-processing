@@ -1,0 +1,17 @@
+# https://docs.devin.ai/onboard-devin/environment-yaml
+# One-time setup: create the qc venv and install the repo + tools.
+initialize: |
+  python3 -m venv ~/venvs/qc
+  ~/venvs/qc/bin/pip install -e . pytest gdown
+# Keep the editable install and deps current.
+maintenance: |
+  ~/venvs/qc/bin/pip install -e . pytest
+# Reference info for agent
+knowledge:
+  - name: test
+    contents: |
+      ~/venvs/qc/bin/python -m pytest -q
+  - name: qc CLI
+    contents: |
+      ~/venvs/qc/bin/python -m qc --help
+      ~/venvs/qc/bin/python -m qc regress --out ./out/baseline
