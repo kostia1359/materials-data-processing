@@ -25,6 +25,9 @@ CAVEATS = [
     "Pixel size (25 nm/px) is taken from the TIFF resolution tags; vendor metadata is absent, so it is unverified.",
     "With N baseline images the smallest achievable rank p-value is 1/(N+1); verdicts are effect-size judgements against a small baseline.",
     "Image grey levels have been remapped after acquisition (comb histograms); any method relying on raw intensities would be confounded - this system uses BSE phase identity after smoothing and treats ETD/InLens levels as acquisition covariates.",
+    "Transport and mechanics indices are 2-D effective-medium quantities computed with a fixed matrix diffusivity D_c = 0.05 and fixed moduli; they are ratios to the baseline under identical assumptions, not electrode tortuosity, conductivity or stress values.",
+    "The deep-pore phase does not percolate in 2-D, so no pore-only tortuosity is reported; the two-conductivity index's absolute level is set by D_c and only its ratios are meaningful.",
+    "Cell-level outputs come from a PyBaMM composite graphite-Si model with a frozen LG-M50-type parameter set and are relative rate-capability and plating-indicator shifts, not predictions of the real cell.",
 ]
 
 NOT_MEASURABLE = [
@@ -34,8 +37,9 @@ NOT_MEASURABLE = [
 ]
 
 
-def evaluate_result(res: dict, stats: dict, kpis_df: pd.DataFrame, cfg: dict) -> dict:
-    """Full verdict object (Section 7.2) from a process_sample result."""
+def evaluate_result(res: dict, stats: dict, kpis_df: pd.DataFrame, cfg: dict,
+                    sim: dict | None = None, sim_base: dict | None = None) -> dict:
+    """Full verdict object (Section 7.2) from a process_sample result (+ Section 10 block)."""
     row = dict(res["kpis"])
     v = verdict(row, stats, cfg)
 
@@ -78,8 +82,13 @@ def evaluate_result(res: dict, stats: dict, kpis_df: pd.DataFrame, cfg: dict) ->
     if gate_flags:
         v["drivers"] = drivers_with_lead = v["drivers"]
 
+    simulation = None
+    if sim is not None:
+        from .sim.baseline import sim_block
+        simulation = sim_block(sim["row"], sim["bounds"], sim_base, sim["row"]["assumptions_hash"])
     return {
         "sample_id": res["sample_id"],
+        "simulation": simulation,
         "baseline": {"batch": int(stats.get("batch", 3)),
                      "n_images": stats["n"], "version": stats.get("version")},
         "acquisition_gates": {"status": gate_status, "flags": gate_flags, "z": gz},
@@ -220,6 +229,70 @@ def fig_overlay(res: dict, path: Path):
 
 # ---------------- text outputs ----------------
 
+PHASE_COLORS = np.array([[20, 20, 20], [120, 120, 120], [255, 200, 40], [200, 40, 200]], dtype=np.uint8)
+
+
+def fig_sim_maps(sim: dict, path: Path):
+    """Fused phase map (x4), swollen map at the largest f_A, per-particle constraint map."""
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    maps = sim.get("maps") or {}
+    if "L_mid" not in maps:
+        return
+    L, S, C = maps["L_mid"], maps.get("L_swollen"), maps.get("constraint_map")
+    fig, ax = plt.subplots(3, 1, figsize=(14, 3 * 14 * L.shape[0] / L.shape[1] + 1))
+    ax[0].imshow(PHASE_COLORS[np.clip(L, 0, 3)]); ax[0].set_title("fused phase map L_mid (black pore, grey carbon, yellow Si, magenta uncertain)")
+    if S is not None:
+        ax[1].imshow(PHASE_COLORS[np.clip(S, 0, 3)]); ax[1].set_title("after swelling (largest f_A scenario, pore-first)")
+    if C is not None:
+        im = ax[2].imshow(C, cmap="magma", vmin=0, vmax=1); ax[2].set_title("per-particle constraint index (fraction of growth into solid)")
+        fig.colorbar(im, ax=ax[2], fraction=0.02)
+    for a in ax:
+        a.axis("off")
+    fig.tight_layout(); fig.savefig(path, dpi=90); plt.close(fig)
+
+
+def fig_dc_sweep(sim_base: dict | None, sim: dict | None, path: Path):
+    """D_eff_rel_TP vs D_c: baseline band (p10-p90, L_mid) + L_solid/L_pore medians; sample point with bounds."""
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    fig, ax = plt.subplots(figsize=(6, 4))
+    sweep = (sim_base or {}).get("D_c_sweep", {})
+    dcs = sorted({float(k.split("_Dc")[1].split("_")[0]) for k in sweep})
+    if dcs:
+        med = [sweep[f"D_eff_rel_TP_Dc{d:g}_L_mid"]["med"] for d in dcs]
+        p10 = [sweep[f"D_eff_rel_TP_Dc{d:g}_L_mid"]["p10"] for d in dcs]
+        p90 = [sweep[f"D_eff_rel_TP_Dc{d:g}_L_mid"]["p90"] for d in dcs]
+        ax.fill_between(dcs, p10, p90, alpha=0.25, label="baseline p10-p90 (L_mid)")
+        ax.plot(dcs, med, "k-o", label="baseline median (L_mid)")
+        for lab, ls in (("L_solid", "--"), ("L_pore", ":")):
+            ys = [sweep.get(f"D_eff_rel_TP_Dc{d:g}_{lab}", {}).get("med", np.nan) for d in dcs]
+            ax.plot(dcs, ys, "k" + ls, label=f"baseline median ({lab})")
+    if sim is not None:
+        row, b = sim["row"], sim["bounds"]
+        dc0 = 0.05
+        v = row.get("D_eff_rel_TP", np.nan)
+        lo, hi = b.get("D_eff_rel_TP_L_solid", v), b.get("D_eff_rel_TP_L_pore", v)
+        ax.errorbar([dc0], [v], yerr=[[max(v - lo, 0)], [max(hi - v, 0)]], fmt="rs", capsize=4,
+                    label="this sample at D_c=0.05 [L_solid, L_pore]")
+        own = sorted((float(k.split("_Dc")[1].split("_")[0]), b[k]) for k in b if k.startswith("D_eff_rel_TP_Dc") and k.endswith("_L_mid"))
+        if own:
+            ax.plot([x for x, _ in own], [y for _, y in own], "r-", label="this sample sweep")
+    ax.set_xscale("log"); ax.set_xlabel("matrix diffusivity D_c (frozen assumption)"); ax.set_ylabel("D_eff_rel through-plane")
+    ax.legend(fontsize=7); fig.tight_layout(); fig.savefig(path, dpi=110); plt.close(fig)
+
+
+def sim_table_rows(simulation: dict) -> list[tuple]:
+    rows = []
+    for k, e in simulation["relative_to_baseline"].items():
+        b = simulation["bounds"].get(k, {})
+        rows.append((k, simulation["grade"].get(k, "B"), e["value"], e.get("baseline_med"), e.get("ratio"),
+                     b.get("L_solid"), b.get("L_pore")))
+    return rows
+
+
 def _g(v, spec: str = ".4g") -> str:
     """Format a float or return 'nan' for None/NaN."""
     return format(v, spec) if v is not None and np.isfinite(v) else "nan"
@@ -301,7 +374,8 @@ def lead_paragraph(ev: dict, stats: dict) -> str:
 
 def write_report(res: dict, stats: dict, kpis_df: pd.DataFrame,
                  strips_df: pd.DataFrame, outdir: Path, cfg: dict,
-                 signatures_path: Path | None = None) -> dict:
+                 signatures_path: Path | None = None,
+                 sim: dict | None = None, sim_base: dict | None = None) -> dict:
     outdir.mkdir(parents=True, exist_ok=True)
     if signatures_path is None:
         signatures_path = Path(stats.get("_sig_path") or "")
@@ -309,7 +383,7 @@ def write_report(res: dict, stats: dict, kpis_df: pd.DataFrame,
     sp = Path(str(outdir)).parent.parent / "signatures.json"
     stats["_sig_path"] = str(sp) if sp.exists() else ""
 
-    ev = evaluate_result(res, stats, kpis_df, cfg)
+    ev = evaluate_result(res, stats, kpis_df, cfg, sim=sim, sim_base=sim_base)
     (outdir / "verdict.json").write_text(json.dumps(ev, indent=2, default=str))
 
     # figures
@@ -322,6 +396,32 @@ def write_report(res: dict, stats: dict, kpis_df: pd.DataFrame,
     new_x = feature_vector(res["kpis"], stats)
     strip_xs = [feature_vector(sr, stats) for sr in res.get("strip_rows", [])]
     fig_pca(kpis_df, stats, new_x, strip_xs, figs / "pca.png")
+    sim_md, sim_html = [], ""
+    if ev.get("simulation"):
+        fig_sim_maps(sim, figs / "sim_maps.png")
+        fig_dc_sweep(sim_base, sim, figs / "dc_sweep.png")
+        sm = ev["simulation"]
+        sim_md = ["", "## Simulation layer (relative indices, frozen assumptions "
+                  f"{sm['assumptions_hash']})", "",
+                  "Grades: A arithmetic on measured quantities; B direction supported, level set by an "
+                  "assumption (ratios only); C labelled heuristic. Bounds = value on L_solid / L_pore.", "",
+                  "| index | grade | value | baseline med | ratio | L_solid | L_pore |", "|---|---|---|---|---|---|---|"]
+        for k, gr, v, med, ratio, lo, hi in sim_table_rows(sm):
+            sim_md.append(f"| {k} | {gr} | {_g(v)} | {_g(med)} | {_g(ratio, '.3g')} | {_g(lo)} | {_g(hi)} |")
+        if sm["undefined"]:
+            sim_md += ["", "Undefined: " + "; ".join(sm["undefined"])]
+        if sm["unstable_indices"]:
+            sim_md += ["", "Rank-unstable across conventions: " + ", ".join(sm["unstable_indices"])]
+        sim_md += ["", f"Downsample audit (pore phase) accepted: {sm['downsample_accepted']}; "
+                   f"uncertain fraction {sm['uncertain_frac']:.3f}", "",
+                   "![sim maps](figs/sim_maps.png)", "![D_c sweep](figs/dc_sweep.png)"]
+        sim_html = "<h2>Simulation layer</h2><p>Frozen assumptions " + sm["assumptions_hash"] + \
+            "; grades A/B/C as in report.md.</p><table><tr><th>index</th><th>grade</th><th>value</th>" \
+            "<th>baseline med</th><th>ratio</th><th>L_solid</th><th>L_pore</th></tr>" + "".join(
+            f"<tr><td>{k}</td><td>{gr}</td><td>{_g(v)}</td><td>{_g(med)}</td><td>{_g(ratio, '.3g')}</td>"
+            f"<td>{_g(lo)}</td><td>{_g(hi)}</td></tr>" for k, gr, v, med, ratio, lo, hi in sim_table_rows(sm)) + \
+            "</table>" + (f"<p>Undefined: {'; '.join(sm['undefined'])}</p>" if sm["undefined"] else "") + \
+            (f"<p>Rank-unstable: {', '.join(sm['unstable_indices'])}</p>" if sm["unstable_indices"] else "")
 
     # markdown report
     md = [f"# QC report: {ev['sample_id']}", "", "## Verdict", "",
@@ -367,13 +467,14 @@ def write_report(res: dict, stats: dict, kpis_df: pd.DataFrame,
            "![pca](figs/pca.png)", "",
            "## Not measurable", ""]
     md += [f"- {x}" for x in NOT_MEASURABLE]
+    md += sim_md
     md += ["", "## Caveats", ""]
     md += [f"- {c}" for c in CAVEATS]
     (outdir / "report.md").write_text("\n".join(md))
 
     # self-contained HTML
     imgs = ""
-    for f in ("overlay.png", "z_bars.png", "pca.png"):
+    for f in ("overlay.png", "z_bars.png", "pca.png", "sim_maps.png", "dc_sweep.png"):
         p = figs / f
         if p.exists():
             b64 = base64.b64encode(p.read_bytes()).decode()
@@ -402,6 +503,7 @@ signature match {a.get('signature_match')}; novelty {a['novelty_flag']}
 (id-score {a.get('in_distribution_score')}).</p>
 <h2>Figures</h2>{imgs}
 <h2>Not measurable</h2><ul>{''.join(f'<li>{x}</li>' for x in NOT_MEASURABLE)}</ul>
+{sim_html}
 <h2>Caveats</h2><ul>{''.join(f'<li>{c}</li>' for c in CAVEATS)}</ul>
 </body></html>"""
     (outdir / "report.html").write_text(html)

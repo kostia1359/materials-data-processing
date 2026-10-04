@@ -11,7 +11,8 @@ from .io import discover
 from .kpis import SHORTLIST
 
 
-def run_regress(data: Path, out: Path, cfg: dict, accept: bool):
+def run_regress(data: Path, out: Path, cfg: dict, accept: bool, only: list[str] | None = None):
+    """``only``: restrict to these sample_ids (the loop passes the triples processed so far)."""
     snap_dir = out / "snapshots"
     snap_dir.mkdir(parents=True, exist_ok=True)
     snaps = sorted(snap_dir.glob("kpis_*.csv"))
@@ -23,7 +24,7 @@ def run_regress(data: Path, out: Path, cfg: dict, accept: bool):
     from . import PIPELINE_VERSION
     results = []
     for s in discover(data):
-        if not s.path_bse:
+        if not s.path_bse or (only is not None and s.sample_id not in only):
             continue
         r, fresh = _process_cached(s, cfg, out)
         results.append(r)

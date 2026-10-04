@@ -189,3 +189,104 @@ R-class KPIs moving > 0.5 scale under perturbation: 279 cases
   (`si_contact_pore_frac`, `pore_percolating_frac_v`) — kept, z=0, no info.
 - **Synthetic ground truth: 11/11 checks pass** (fractions, D50, anisotropy,
   Clark–Evans Poisson/clustered, perturbation robustness of R-class KPIs).
+
+## Simulation layer (Section 10) — self-checks
+
+### Phantoms (exact solutions, `qc/sim/phantoms.py`, `tests/test_sim.py`)
+
+| phantom | quantity | target | value | rel. err | tol | pass |
+|---|---|---|---|---|---|---|
+| straight channels | tau | 1 | 1 | 0.0% | 0.01 | yes |
+| tilted channel 30 deg | tau | 1.33 | 1.42 | 6.8% | 0.08 | yes |
+| serpentine | tau | 13.2 | 12.9 | 2.8% | 0.1 | yes |
+| Keller checkerboard cell=8px | sigma_eff | 0.316 | 0.278 | 12.1% | - | series |
+| Keller checkerboard cell=16px | sigma_eff | 0.316 | 0.294 | 7.1% | - | series |
+| Keller checkerboard cell=32px | sigma_eff | 0.316 | 0.303 | 4.1% | 0.06 | yes |
+
+The checkerboard series converges from below (corner singularities); the 32-px cell is the tested one.
+
+### Per-sample inequality and flux checks (all 31 triples)
+
+- solid-bound <= mid <= pore-bound: 31/31 samples
+- |1 - flux_out/flux_in| max 1.4e-10 (through-plane), 1.2e-09 (in-plane)
+- D_eff_rel_TP <= eps_pore + D_c·(1-eps_pore) (two-conductivity upper bound): 31/31
+- pore phase spans top-bottom in 0/31 samples (expected 0, caveat 10)
+- downsample audit accepted (pore phase) 31/31; median uncertain fraction 0.244
+
+### Empirical REV (bound half-width / value, baseline median)
+
+- D_eff_rel_TP: 38.6%
+- tau_p: 12.9%
+- pore_closure_frac_2.43: 7.4%
+- constraint_index_2.43: 38.5%
+
+### D_c sweep (baseline medians, D_eff_rel_TP)
+
+| column | p10 | median | p90 |
+|---|---|---|---|
+| D_eff_rel_TP_Dc0.02_L_mid | 0.0211 | 0.0377 | 0.0468 |
+| D_eff_rel_TP_Dc0.02_L_solid | 0.0139 | 0.0257 | 0.0307 |
+| D_eff_rel_TP_Dc0.02_L_pore | 0.0373 | 0.0686 | 0.087 |
+| D_eff_rel_TP_Dc0.05_L_mid | 0.0432 | 0.0792 | 0.0933 |
+| D_eff_rel_TP_Dc0.05_L_solid | 0.0319 | 0.0585 | 0.0651 |
+| D_eff_rel_TP_Dc0.05_L_pore | 0.0672 | 0.126 | 0.146 |
+| D_eff_rel_TP_Dc0.1_L_mid | 0.0727 | 0.136 | 0.156 |
+| D_eff_rel_TP_Dc0.1_L_solid | 0.0588 | 0.108 | 0.117 |
+| D_eff_rel_TP_Dc0.1_L_pore | 0.104 | 0.197 | 0.215 |
+
+### Rank robustness (Spearman across conventions; < 0.8 marks the index unstable)
+
+- D_eff_rel_TP_Dc0.02_L_mid vs D_eff_rel_TP_Dc0.05_L_mid: 0.993
+- D_eff_rel_TP_Dc0.02_L_mid vs D_eff_rel_TP_Dc0.1_L_mid: 0.985
+- D_eff_rel_TP_Dc0.05_L_mid vs D_eff_rel_TP_Dc0.1_L_mid: 0.995
+- Q_vol deep vs offset: 0.996
+- unstable indices: none
+
+### Detector and resolution ablations (4 samples)
+
+| sample | batch | variant | uncertain | D_eff_rel_TP | tau_p | sigma_eff | carbon span | pore pf Δ | carbon pf Δ |
+|---|---|---|---|---|---|---|---|---|---|
+| img_0grcilhi | 3 | full | 0.17 | 0.0608 | 4.15 | nan | nan | nan | nan |
+| img_0grcilhi | 3 | no_etd | 0.00671 | 0.0449 | 3.91 | nan | nan | nan | nan |
+| img_0grcilhi | 3 | no_inlens | 0.169 | 0.0615 | 4.13 | nan | nan | nan | nan |
+| img_0grcilhi | 3 | x2 | nan | 0.0614 | 4.08 | 0.0166 | 0.709 | 0.000 | -0.214 |
+| img_0grcilhi | 3 | x4 | nan | 0.0608 | 4.15 | 0.0126 | 0.503 | 0.000 | -0.492 |
+| img_0grcilhi | 3 | x8 | nan | 0.0614 | 4.14 | 0.00932 | 0.196 | 0.000 | -0.707 |
+| img_71vgq3fw | 3 | full | 0.287 | 0.069 | 3.3 | nan | nan | nan | nan |
+| img_71vgq3fw | 3 | no_etd | 0.0072 | 0.0645 | 2.79 | nan | nan | nan | nan |
+| img_71vgq3fw | 3 | no_inlens | 0.286 | 0.0694 | 3.3 | nan | nan | nan | nan |
+| img_71vgq3fw | 3 | x2 | nan | 0.0706 | 3.19 | 0.0592 | 0.942 | 0.000 | -0.075 |
+| img_71vgq3fw | 3 | x4 | nan | 0.069 | 3.3 | 0.029 | 0.777 | 0.000 | -0.201 |
+| img_71vgq3fw | 3 | x8 | nan | 0.0667 | 3.38 | 0.0353 | 0.682 | 0.000 | -0.345 |
+| img_4ih2ggld | 1 | full | 0.205 | 0.022 | 9.97 | nan | nan | nan | nan |
+| img_4ih2ggld | 1 | no_etd | 0.00545 | 0.0169 | 7.63 | nan | nan | nan | nan |
+| img_4ih2ggld | 1 | no_inlens | 0.204 | 0.0226 | 9.76 | nan | nan | nan | nan |
+| img_4ih2ggld | 1 | x2 | nan | 0.0212 | 10.2 | nan | 0 | 0.000 | 0.000 |
+| img_4ih2ggld | 1 | x4 | nan | 0.022 | 9.97 | nan | 0 | 0.000 | 0.000 |
+| img_4ih2ggld | 1 | x8 | nan | 0.0268 | 8.05 | nan | 0 | 0.000 | 0.000 |
+| img_3806gxp0 | 2 | full | 0.254 | 0.0947 | 2.98 | nan | nan | nan | nan |
+| img_3806gxp0 | 2 | no_etd | 0.0125 | 0.0632 | 2.16 | nan | nan | nan | nan |
+| img_3806gxp0 | 2 | no_inlens | 0.253 | 0.0954 | 2.98 | nan | nan | nan | nan |
+| img_3806gxp0 | 2 | x2 | nan | 0.0963 | 2.9 | 0.11 | 0.977 | 0.000 | -0.012 |
+| img_3806gxp0 | 2 | x4 | nan | 0.0947 | 2.98 | 0.0918 | 0.965 | 0.000 | -0.022 |
+| img_3806gxp0 | 2 | x8 | nan | 0.0908 | 3.08 | 0.0876 | 0.931 | 0.000 | -0.063 |
+
+- D_eff_rel_TP rank agreement x2 vs x4: Spearman 1.00; x4 vs x8: 1.00 (n=4)
+
+### PyBaMM sensitivity at the project composition (relative change of each output)
+
+| perturbation | Q_CC_1C/Q_C10 | Q_CC_3C/Q_C10 | min eta_sep 1C | min eta_sep 3C | min c_e 3C |
+|---|---|---|---|---|---|
+| tau+30% | -0.7% | -7.5% | +86% | +35% | -87% |
+| eps-0.05 | -0.1% | -7.6% | +105% | +51% | -90% |
+| fsi+30% | +0.7% | +1.7% | +4% | +6% | +3% |
+| rsi+30% | -0.5% | -1.3% | +54% | +5% | +7% |
+| hyst | -2.8% | -7.7% | +297% | +28% | +64% |
+
+Ranking at this composition: porosity ≳ tortuosity ≫ Si fraction ≈ Si radius for the 3C plating indicator; the hysteresis option moves the 1C indicator by ~3× its value, so cell-level plating outputs are ratios with grade B/C only.
+
+### Section 0.3 loop log
+
+- 31 triples processed in order Batch_3 → Batch_1 → Batch_2; 31 ok, 31 regress OK; median wall time 218 s/triple (KPIs + full sim incl. D_c sweep)
+- shortlist hash constant across the loop: True
+- flagged triples: none after the final check rule. Three triples (img_tuy3zymq, img_4ih2ggld, img_5n1q8atc) were first logged `flag` because their electronic index is undefined (carbon phase does not span after x4); the rule was corrected so that only an undefined *ionic* index fails a triple, the rows were re-checked from cache and both the `flag` and the `ok` rows remain in `loop_log.csv`.
